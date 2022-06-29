@@ -1,0 +1,105 @@
+// set as java application
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation group: 'org.json', name: 'json', version: '20200518'
+}
+
+def peerName = "test"
+def peer = 'localhost:8000'
+def leader = 'localhost:8000'
+def isLeader = false
+def money = 1000
+def isClient = false
+def isBank = false
+
+// task reading in the arguments if any given, if not the default from above will be used
+task arguments {
+	if (project.hasProperty("peerName")) {
+      peerName = project.getProperty("peerName")
+    }
+    if (project.hasProperty("peer")) {
+      peer = project.getProperty("peer")
+    }
+    if (project.hasProperty("leader")) {
+      leader = project.getProperty("leader")
+    }
+    if (project.hasProperty("isLeader")) {
+      isLeader = project.getProperty("isLeader")
+    }
+    if (project.hasProperty("money")) {
+        money = project.getProperty("money")
+    }
+    if (project.hasProperty("isBank")) {
+        money = project.getProperty("isBank")
+    }
+} 
+task runLeader(type: JavaExec){
+    description 'Runs Leader'
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'Peer'
+    standardInput = System.in
+
+    args peerName
+    args peer='localhost:8000'
+    args leader='localhost:8000'
+    args isLeader = true
+    args money
+    args isClient = false
+    args isBank = false
+}
+
+task client(type: JavaExec) {
+    description 'Runs Client'
+
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'Peer'
+    standardInput = System.in
+
+    args peerName='Client'
+    args peer='localhost:9000'
+    args leader='localhost:8000'
+    args isLeader = false
+    args money = 0
+    args isClient = true
+    args isBank = false
+}
+
+task node1(type: JavaExec) {
+    description 'Runs peer'
+
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'Peer'
+    standardInput = System.in
+
+    args peerName='Node1'
+    args peer='localhost:8001'
+    args leader='localhost:8000'
+    args isLeader = false
+    args money = 1000
+    args isClient = false
+    args isBank = true
+}
+
+task node2(type: JavaExec) {
+    description 'Runs peer'
+
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'Peer'
+    standardInput = System.in
+
+    args peerName='Node2'
+    args peer='localhost:8002'
+    args leader='localhost:8000'
+    args isLeader = false
+    args money = 1000
+    args isClient = false
+    args isBank = true
+}
