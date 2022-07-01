@@ -33,14 +33,21 @@ public class ServerTask extends Thread {
 	// You can enhance this or totally change it, up to you. 
 	// I used simple JSON here, you can use your own protocol, use protobuf, anything you want
 	// in here this is not done especially pretty, I just use a PrintWriter and BufferedReader for simplicity
-	public void run() {
+	public synchronized void run() {
 		while (true) {
 			try {
 			    JSONObject json = new JSONObject(bufferedReader.readLine());
+				if(json.get("type").equals("loanAccept")){
+
+					System.out.println("Your Loan Request was Accepted");
+				}
+				if(json.get("type").equals("loanDenied")){
+					System.out.println("Your Loan Request was Denied");
+				}
 					if(json.get("type").equals("bank")) {
 						BankInfo bankInfo = new BankInfo((json.get("username").toString()), (int)json.get("amount"));
 						peer.getBroker().addBank(bankInfo);
-					}
+							}
 					if(json.get("type").equals("id")){
 					ClientInfo clientInfo = new ClientInfo((String) json.get("username"));
 					peer.getBroker().addClient(clientInfo);
@@ -58,17 +65,50 @@ public class ServerTask extends Thread {
 					}
 					Boolean request = peer.getBroker().loanRequest(client, (int)json.get("amount"));
 					if(request == true){
-						System.out.println("Your Loan Request was Accepted");
-						peer.getBroker().acceptLoanRequest(client, (int)json.get("amount"));
+						if(peer.getBroker().acceptLoanRequest(client, (int)json.get("amount"), peer) == true) {
+							peer.pushMessage("{'type': 'loanAccept', 'username': "+ (String)json.get("username") + "}");
+						}
 					}else {
-						System.out.println("Your Loan Request was Denied");
+						peer.pushMessage("{'type': 'loanDenied', 'username': "+ (String)json.get("username") + "}");
 					}
+				}
+				if(json.getString("type").equals("error")){
+					System.out.println("Cannot payback more money than is owed.");
+				}
+				if(json.getString("type").equals("oneCredit")){
+					System.out.println("Each user can only have one credit at a time.");
+				}
+				if(json.getString("type").equals("payingThisBank")){
+					System.out.println("Bank: "+json.get("bankName")+", now has $"+json.get("bankAmount"));
+				}
+				if(json.getString("type").equals("payingBack")){
+					ArrayList<ClientInfo> clients = peer.getBroker().getClients();
+					ClientInfo client = null;
+					for (int i = 0;i<clients.size();i++) {
+						if(((String) json.get("username")).equals(clients.get(i).getName())){
+							client = clients.get(i);
+							client.amountOwed((String)json.get("amountOwed"));
+						}
+					}
+
+					System.out.println("You now owe: $" + json.get("amountOwed"));
+				}
+				if(json.getString("type").equals("payback")){
+					System.out.println("Payback Amount: " + json.get("amount"));
+					ArrayList<ClientInfo> clients = peer.getBroker().getClients();
+					ClientInfo client = null;
+					for (int i = 0;i<clients.size();i++) {
+						if(((String) json.get("username")).equals(clients.get(i).getName())){
+							client = clients.get(i);
+						}
+					}
+					peer.getBroker().payback(client, (int)json.get("amount"), peer);
 				}
 
 			    if (json.getString("type").equals("join")){
-			    	System.out.println("     " + json); // just to show the json
+			    	//System.out.println("     " + json); // just to show the json
 
-			    	System.out.println("     " + json.getString("username") + " wants to join the network");
+			    	//System.out.println("     " + json.getString("username") + " wants to join the network");
 			    	peer.updateListenToPeers(json.getString("ip") + ":" + json.getInt("port"));
 			    	out.println(("{'type': 'join', 'list': '"+ peer.getPeers() +"'}"));
 

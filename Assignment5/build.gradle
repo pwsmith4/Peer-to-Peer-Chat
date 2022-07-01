@@ -65,7 +65,39 @@ task client(type: JavaExec) {
     args peer='localhost:9000'
     args leader='localhost:8000'
     args isLeader = false
-    args money = 0
+    args money
+    args isClient = true
+    args isBank = false
+}
+task client2(type: JavaExec) {
+    description 'Runs Client'
+
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'Peer'
+    standardInput = System.in
+
+    args peerName='Client2'
+    args peer='localhost:9005'
+    args leader='localhost:8000'
+    args isLeader = false
+    args money
+    args isClient = true
+    args isBank = false
+}
+task client3(type: JavaExec) {
+    description 'Runs Client'
+
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'Peer'
+    standardInput = System.in
+
+    args peerName='Client3'
+    args peer='localhost:9009'
+    args leader='localhost:8000'
+    args isLeader = false
+    args money
     args isClient = true
     args isBank = false
 }
@@ -78,11 +110,11 @@ task node1(type: JavaExec) {
     main = 'Peer'
     standardInput = System.in
 
-    args peerName='Node1'
+    args peerName='Bank1'
     args peer='localhost:8001'
     args leader='localhost:8000'
     args isLeader = false
-    args money = 1000
+    args money
     args isClient = false
     args isBank = true
 }
@@ -95,11 +127,27 @@ task node2(type: JavaExec) {
     main = 'Peer'
     standardInput = System.in
 
-    args peerName='Node2'
+    args peerName='Bank2'
     args peer='localhost:8002'
     args leader='localhost:8000'
     args isLeader = false
-    args money = 1000
+    args money
+    args isClient = false
+    args isBank = true
+}
+task node3(type: JavaExec) {
+    description 'Runs peer'
+
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'Peer'
+    standardInput = System.in
+
+    args peerName='Bank3'
+    args peer='localhost:8003'
+    args leader='localhost:8000'
+    args isLeader = false
+    args money
     args isClient = false
     args isBank = true
 }

@@ -2,14 +2,14 @@ SocketInfo.java
  SocketInfo
 NetworkUtils.java
  NetworkUtils
-ClientInfo.java
- ClientInfo
 BankSock.java
  BankSock
 JsonUtils.java
  JsonUtils
 BankInfo.java
  BankInfo
+ClientInfo.java
+ ClientInfo
 ServerTask.java
  ServerTask
 Broker.java

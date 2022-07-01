@@ -41,39 +41,39 @@ public class Peer {
 		this.serverThread = serverThread;
 	}
 
-	public void setLeader(boolean isLeader, SocketInfo leaderSocket){
+	public synchronized void setLeader(boolean isLeader, SocketInfo leaderSocket){
 		this.isLeader = isLeader;
 		this.leaderSocket = leaderSocket;
 	}
-	public boolean isLeader(){
+	public synchronized boolean isLeader(){
 		return isLeader;
 	}
-	public void setIsBank(){
+	public synchronized void setIsBank(){
 		isBank = true;
 	}
 
-	public void setID(int givenId){
+	public synchronized void setID(int givenId){
 		id = givenId;
 	}
 
-	public int getId(){
+	public synchronized int getId(){
 		return id;
 	}
 
-	public Broker getBroker(){
+	public synchronized Broker getBroker(){
 		return broker;
 	}
 
-	public void setBroker(Broker broker){
+	public synchronized void setBroker(Broker broker){
 		this.broker=broker;
 	}
 
-	public void addPeer(SocketInfo si){
+	public synchronized void addPeer(SocketInfo si){
 		peers.add(si);
 	}
 	
 	// get a string of all peers that this peer knows
-	public String getPeers(){
+	public synchronized String getPeers(){
 		String s = "";
 		for (SocketInfo p: peers){
 			s = s +  p.getHost() + ":" + p.getPort() + " ";
@@ -87,7 +87,7 @@ public class Peer {
 	 *
 	 * @param list String of peers in the format "host1:port1 host2:port2"
 	 */
-	public void updateListenToPeers(String list) throws Exception {
+	public synchronized void updateListenToPeers(String list) throws Exception {
 		String[] peerList = list.split(" ");
 		for (String p: peerList){
 			String[] hostPort = p.split(":");
@@ -136,7 +136,7 @@ public class Peer {
 						}
 						if (choice[0].equals("payback")) {
 
-							pushMessage("{'type': 'payback', 'username': '" + username + "','message':'" + choice[0] + " " + choice[1] + "'}");
+							pushMessage("{'type': 'payback', 'username': '" + username + "','message':'" + choice[0] + " " + choice[1] + "', 'amount': " + choice[1] + "}");
 						}
 					}
 
@@ -160,7 +160,7 @@ public class Peer {
 	 * this might be an interesting point to check if one cannot connect that a leader election is needed
 	 */
 
-	public void commLeader(String message) {
+	public synchronized void commLeader(String message) {
 		try {
 			BufferedReader reader = null; 
 				Socket socket = null;
@@ -181,7 +181,7 @@ public class Peer {
 				out.println(message);
 
 				JSONObject json = new JSONObject(reader.readLine());
-				System.out.println("     Received from server " + json);
+			//	System.out.println("     Received from server " + json);
 				String list = json.getString("list");
 				updateListenToPeers(list); // when we get a list of all other peers that the leader knows we update them
 
@@ -195,15 +195,15 @@ public class Peer {
 	 *
 	 * @param message String that peer wants to send to other peers
 	 */
-	public void pushMessage(String message) {
+	public synchronized void pushMessage(String message) {
 		try {
-			System.out.println("     Trying to send to peers: " + peers.size());
+			//System.out.println("     Trying to send to peers: " + peers.size());
 
 			Set<SocketInfo> toRemove = new HashSet<SocketInfo>();
 			BufferedReader reader = null; 
 			int counter = 0;
 			for (SocketInfo s : peers) {
-				System.out.println("Peers: " + getPeers());
+			//	System.out.println("Peers: " + getPeers());
 				Socket socket = null;
 				try {
 					socket = new Socket(s.getHost(), s.getPort());
@@ -221,7 +221,7 @@ public class Peer {
 				}
 
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-				System.out.println("Sending: " + message);
+			//	System.out.println("Sending: " + message);
 
 				out.println(message);
 				counter++;
@@ -231,11 +231,14 @@ public class Peer {
 		    	peers.remove(s);
 		    }
 
-		    System.out.println("     Message was sent to " + counter + " peers");
+		//    System.out.println("     Message was sent to " + counter + " peers");
 
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	public String getUsername(){
+		return username;
 	}
 
 	/**
